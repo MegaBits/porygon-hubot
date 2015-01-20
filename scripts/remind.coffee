@@ -36,11 +36,11 @@ module.exports = (robot) ->
         
     description = (task) ->
         dueDate = Date.create(task.due_date).format("{MM}/{dd}/{yyyy}")
-        return "#{task.task} for #{task.project} (#{dueDate})"
+        return "#{task.priority} (#{dueDate}) #{task.task} for #{task.project}"
         
     taskList = (tasks) ->
         """```
-        #{task.priority} #{(description(task) for task in tasks).join('\n[ ] ')}
+        #{(description(task) for task in tasks).join('\n')}
         ```"""
         
     tasksForProjects = (projects) ->
