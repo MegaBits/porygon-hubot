@@ -193,6 +193,10 @@ module.exports = (robot) ->
         results = fuzzy.filter(msg.match[2], (task.task for task in allTasks)).map (i) ->
             i.string
         
+        if results.length <= 0
+            msg.send("I can't seem to find that task.")
+            return
+        
         projectName = (task.project for task in allTasks when task.task == results[0])
         project = []
         if projects[projectName]?
