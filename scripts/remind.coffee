@@ -131,7 +131,7 @@ module.exports = (robot) ->
     
     # Task Addition
     # ... hubot remind me to email Foo about the party by tomorrow ***
-    robot.hear /remind (.*) to (.*) (for|about) (.*)  by (.*) (\*{1,5})/i, (msg) ->
+    robot.hear /remind (.*) to (.*) (for|about) (.*) by (.*) (\*{1,5})/i, (msg) ->
         # Get user.
         username = msg.match[1].trim()        
         user = robot.brain.usersForFuzzyName(username)[0]        
