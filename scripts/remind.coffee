@@ -61,7 +61,7 @@ module.exports = (robot) ->
             response = "#{user.name}: #{description(allTasks[0])}"
         else
             response = "Relax! There's nothing on #{user.name}'s list."
-        msg.reply(response)
+        msg.send(response)
     
     # ... hubot what's due for the party from me?
     robot.hear /what's due for (.*) from ([^\?]*)(\??)/i, (msg) ->
@@ -75,7 +75,7 @@ module.exports = (robot) ->
         projectName = msg.match[1].toLowerCase().trim()
         
         if not projectName of projects
-            msg.reply "I'm not sure which project you mean."
+            msg.send "I'm not sure which project you mean."
             return
         
         # Sort and filter
@@ -93,7 +93,7 @@ module.exports = (robot) ->
         else
             response = "There are no tasks due for #{results[0] or projectName}."
             
-        msg.reply(response)
+        msg.send(response)
     
     # ... hubot what's due on Thursday from me?
     robot.hear /what's due (on|by) (.*) from ([^\?]*)(\??)/i, (msg) ->
@@ -127,7 +127,7 @@ module.exports = (robot) ->
         else
             response = "#{user.name} has no tasks due #{msg.match[1]} #{requestedDate}."
             
-        msg.reply(response)
+        msg.send(response)
     
     # Task Addition
     # ... hubot remind me to email Foo about the party by tomorrow ***
@@ -139,7 +139,7 @@ module.exports = (robot) ->
             user = msg.message.user
         
         if not user?
-            msg.reply "I'm not sure who I should remind."
+            msg.send "I'm not sure who I should remind."
             return                    
                     
         # Get due date.
@@ -175,7 +175,7 @@ module.exports = (robot) ->
         projects[projectName] = project
         
         robot.brain.set("remind/#{user.name}/projects", projects)
-        msg.reply(":thumbsup: #{user.name} should #{task} #{msg.match[3]} #{projectName} (#{priority}#{dueDate})")
+        msg.send(":thumbsup: #{user.name} should #{task} #{msg.match[3]} #{projectName} (#{priority}#{dueDate})")
         
     # Task Remove
     # ... hubot i finished emailing Foo
@@ -204,7 +204,7 @@ module.exports = (robot) ->
         projects[projectName] = project
         
         robot.brain.set("remind/#{user.name}/projects", projects)
-        msg.reply(":thumbsup: Nice! '#{results[0]}' is off the list.")
+        msg.send(":thumbsup: Nice! '#{results[0]}' is off the list.")
         
     # ... hubot clear everything
     robot.hear /clear all tasks for (.*)/i, (msg) ->
@@ -217,15 +217,15 @@ module.exports = (robot) ->
         if robot.brain.get("remind/clear") == user.name
             robot.brain.remove("remind/#{user.name}/projects")
             robot.brain.remove("remind/clear")
-            msg.reply("Ok. All tasks for #{user.name} have be cleared.")
+            msg.send("Ok. All tasks for #{user.name} have be cleared.")
         else
             robot.brain.set("remind/clear", user.name)
-            msg.reply(":emperoar: Are you sure I should delete all tasks? Send this command again so I can confirm.")
+            msg.send(":emperoar: Are you sure I should delete all tasks? Send this command again so I can confirm.")
             
     # ... hubot cancel clear
     robot.hear /cancel clear/i, (msg) ->
         robot.brain.remove("remind/clear")
-        msg.reply(":relieved: Ok. I won't clear all tasks.")
+        msg.send(":relieved: Ok. I won't clear all tasks.")
         
         
 # Misc. Functions
