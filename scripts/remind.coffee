@@ -15,6 +15,13 @@
 #   }
 #
 #   weight(task) = (10 - (due_date - time())) + (10 * (priorty / 5))
+#
+# Feature Requests:
+#   ****- More dynamic/NLP reminder requests
+#   **--- Periodic updates in chat / Actual reminders
+#   ***-- Project layout formatting
+#   ****- Priority sort formatting, like this list
+#   *---- Calendar export / Google calendar integration
 
 sugar = require('sugar')
 fuzzy = require('fuzzy')
@@ -28,12 +35,12 @@ module.exports = (robot) ->
         return time + priority
         
     description = (task) ->
-        dueDate = Date.create(task.due_date).format(", {MM}/{dd}/{yyyy}")
-        return "#{task.task} for #{task.project} (#{task.priority}#{dueDate})"
+        dueDate = Date.create(task.due_date).format("{MM}/{dd}/{yyyy}")
+        return "#{task.task} for #{task.project} (#{dueDate})"
         
     taskList = (tasks) ->
         """```
-        [ ] #{(description(task) for task in tasks).join('\n[ ] ')}
+        #{task.priority} #{(description(task) for task in tasks).join('\n[ ] ')}
         ```"""
         
     tasksForProjects = (projects) ->
