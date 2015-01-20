@@ -130,8 +130,8 @@ module.exports = (robot) ->
         msg.reply(response)
     
     # Task Addition
-    # ... hubot remind me to email Foo by tomorrow about the party ***
-    robot.hear /remind (.*) to (.*) by (.*) (for|about) (.*) (\*{1,5})/i, (msg) ->
+    # ... hubot remind me to email Foo about the party by tomorrow ***
+    robot.hear /remind (.*) to (.*) (for|about) (.*)  by (.*) (\*{1,5})/i, (msg) ->
         # Get user.
         username = msg.match[1].trim()        
         user = robot.brain.usersForFuzzyName(username)[0]        
@@ -143,7 +143,7 @@ module.exports = (robot) ->
             return                    
                     
         # Get due date.
-        time = msg.match[3]
+        time = msg.match[5]
         parsedDate = Date.create(time)
         if parsedDate.isValid() and parsedDate.isFuture()
             dueDate = parsedDate.format(", {MM}/{dd}/{yyyy}")
@@ -152,7 +152,7 @@ module.exports = (robot) ->
             dueDate = ""
         
         # Get project
-        projectName = msg.match[5].toLowerCase().trim()
+        projectName = msg.match[4].toLowerCase().trim()
         projects = robot.brain.get("remind/#{user.name}/projects") or {}
                 
                 # ask for response FUCK
@@ -175,7 +175,7 @@ module.exports = (robot) ->
         projects[projectName] = project
         
         robot.brain.set("remind/#{user.name}/projects", projects)
-        msg.reply(":thumbsup: #{user.name} should #{task} #{msg.match[4]} #{projectName} (#{priority}#{dueDate})")
+        msg.reply(":thumbsup: #{user.name} should #{task} #{msg.match[3]} #{projectName} (#{priority}#{dueDate})")
         
     # Task Remove
     # ... hubot i finished emailing Foo
