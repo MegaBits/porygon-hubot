@@ -197,21 +197,20 @@ module.exports = (robot) ->
         priority = priority.rpad('-', 5)
         
         # Add to project
-        task =
+        projectTask =
             task: task
             due_date: parsedDate
             priority: priority
             project: projectName
             
-        project.push(task)
-        
+        project.push(projectTask)
         projects[projectName] = project
         
         robot.brain.set("remind/#{user.name}/projects", projects)
         msg.send(":thumbsup: #{user.name} should #{task} #{heuristic} #{projectName} (#{priority}#{dueDate})")
         
         schedule.scheduleJob(parsedDate, () ->
-            msg.send(":alarm_clock: Reminder: #{description(task)}"))
+            msg.send(":alarm_clock: Reminder: #{description(projectTask)}"))
         
     # Task Remove
     # ... hubot i finished emailing Foo
