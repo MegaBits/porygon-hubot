@@ -15,9 +15,6 @@
 #   }
 #
 #   weight(task) = (10 - (due_date - time())) + (10 * (priorty / 5))
-#
-# Feature Requests:
-#   *---- Calendar export / Google calendar integration
 
 sugar = require('sugar')
 fuzzy = require('fuzzy')
