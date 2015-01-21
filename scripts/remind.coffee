@@ -215,7 +215,7 @@ module.exports = (robot) ->
         
     # Task Remove
     # ... hubot i finished emailing Foo
-    robot.hear /(.*) finished (.*)(^project)/i, (msg) ->
+    robot.hear /(.*) finished ((?!project$).*)/i, (msg) ->
         # Get user and projects
         username = msg.match[1].trim()        
         user = robot.brain.usersForFuzzyName(username)[0] or user = msg.message.user
