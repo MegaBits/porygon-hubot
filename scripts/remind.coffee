@@ -17,10 +17,10 @@
 #   weight(task) = (10 - (due_date - time())) + (10 * (priorty / 5))
 #
 # Feature Requests:
-#   ****- More dynamic/NLP reminder requests
+#   ***** Full dumps of tasks
+#   ***-- Unit tests
 #   **--- Periodic updates in chat / Actual reminders
 #   ***-- Project layout formatting
-#   ****- Priority sort formatting, like this list
 #   *---- Calendar export / Google calendar integration
 
 sugar = require('sugar')
@@ -72,15 +72,17 @@ module.exports = (robot) ->
     
     # ... hubot what's due for the party from me?
     robot.hear /what's due for (.*) from ([^\?]*)(\??)/i, (msg) ->
+        projectTaskHandler(msg, msg.match[2].trim(), msg.match[1].toLowerCase().trim())
+    robot.hear /what's due from (.*) for ([^\?]*)(\??)/i, (msg) ->
+        projectTaskHandler(msg, msg.match[1].trim(), msg.match[2].toLowerCase().trim())
+        
+    projectTaskHandler = (msg, username, projectName) ->
         # Get user and projects
-        username = msg.match[2].trim()        
         user = robot.brain.usersForFuzzyName(username)[0]        
         if username == "me" or not user?
             user = msg.message.user
             
-        projects = robot.brain.get("remind/#{user.name}/projects") or {}
-        projectName = msg.match[1].toLowerCase().trim()
-        
+        projects = robot.brain.get("remind/#{user.name}/projects") or {}        
         if not projectName of projects
             msg.send "I'm not sure which project you mean."
             return
@@ -104,8 +106,18 @@ module.exports = (robot) ->
     
     # ... hubot what's due on Thursday from me?
     robot.hear /what's due (on|by) (.*) from ([^\?]*)(\??)/i, (msg) ->
+        dueDateTaskHandler(msg,
+            msg.match[3].trim(),
+            msg.match[1].trim(),
+            msg.match[2].trim())
+    robot.hear /what's due from (.*) (on|by) ([^\?]*)(\??)/i, (msg) ->
+        dueDateTaskHandler(msg,
+            msg.match[1].trim(),
+            msg.match[2].trim(),
+            msg.match[3].trim())
+    
+    dueDateTaskHandler = (msg, username, heuristic, date) ->
         # Get user and projects
-        username = msg.match[3].trim()        
         user = robot.brain.usersForFuzzyName(username)[0]        
         if username == "me" or not user?
             user = msg.message.user
@@ -114,11 +126,11 @@ module.exports = (robot) ->
         
         # Sort and filter
         allTasks = tasksForProjects(projects).filter (task) ->
-            previousDate = Date.create(msg.match[2]).rewind({ days: 1 })
-            nextDate = Date.create(msg.match[2]).advance({ days: 1 })
+            previousDate = Date.create(date).rewind({ days: 1 })
+            nextDate = Date.create(date).advance({ days: 1 })
             
             dueDate = Date.create(task.due_date)
-            switch msg.match[1]
+            switch heuristic
                 when "by"
                     if dueDate.isBefore(nextDate)
                         return true
@@ -128,9 +140,9 @@ module.exports = (robot) ->
             return false  
         
         # Build response
-        requestedDate = Date.create(msg.match[2]).format('{MM}/{dd}/{yyyy}')
+        requestedDate = Date.create(date).format('{MM}/{dd}/{yyyy}')
         if allTasks.length > 0
-            response = "The following tasks are due from #{user.name} #{msg.match[1]} #{requestedDate}\n#{taskList(allTasks)}"
+            response = "The following tasks are due from #{user.name} #{heuristic} #{requestedDate}\n#{taskList(allTasks)}"
         else
             response = "#{user.name} has no tasks due #{msg.match[1]} #{requestedDate}."
             
@@ -139,8 +151,24 @@ module.exports = (robot) ->
     # Task Addition
     # ... hubot remind me to email Foo about the party by tomorrow ***
     robot.hear /remind (.*) to (.*) (for|about) (.*) by (.*) (\*{1,5})/i, (msg) ->
+        newTaskHandler(msg,
+            msg.match[1].trim(),
+            msg.match[2].trim(),
+            msg.match[3].trim(),
+            msg.match[4].toLowerCase().trim(),
+            msg.match[5].trim(),
+            msg.match[6])
+    robot.hear /remind (.*) to (.*) by (.*) (for|about) (.*) (\*{1,5})/i, (msg) ->
+        newTaskHandler(msg,
+            msg.match[1].trim(),
+            msg.match[2].trim(),
+            msg.match[4].trim(),
+            msg.match[5].toLowerCase().trim(),
+            msg.match[3].trim(),
+            msg.match[6])
+        
+    newTaskHandler = (msg, username, task, heuristic, projectName, time, priority) ->
         # Get user.
-        username = msg.match[1].trim()        
         user = robot.brain.usersForFuzzyName(username)[0]        
         if username == "me" or not user?
             user = msg.message.user
@@ -150,7 +178,6 @@ module.exports = (robot) ->
             return                    
                     
         # Get due date.
-        time = msg.match[5]
         parsedDate = Date.create(time)
         if parsedDate.isValid() and parsedDate.isFuture()
             dueDate = parsedDate.format(", {MM}/{dd}/{yyyy}")
@@ -159,17 +186,14 @@ module.exports = (robot) ->
             dueDate = ""
         
         # Get project
-        projectName = msg.match[4].toLowerCase().trim()
         projects = robot.brain.get("remind/#{user.name}/projects") or {}
                 
-                # ask for response FUCK
         project = []
         if projects[projectName]?
            project = projects[projectName]
         
-        # Get priority and task
-        priority = msg.match[6].rpad('-', 5)
-        task = msg.match[2]
+        # Get priority
+        priority = priority.rpad('-', 5)
         
         # Add to project
         project.push(
@@ -182,7 +206,7 @@ module.exports = (robot) ->
         projects[projectName] = project
         
         robot.brain.set("remind/#{user.name}/projects", projects)
-        msg.send(":thumbsup: #{user.name} should #{task} #{msg.match[3]} #{projectName} (#{priority}#{dueDate})")
+        msg.send(":thumbsup: #{user.name} should #{task} #{heuristic} #{projectName} (#{priority}#{dueDate})")
         
     # Task Remove
     # ... hubot i finished emailing Foo
