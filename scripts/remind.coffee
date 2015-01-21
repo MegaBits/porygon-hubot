@@ -73,6 +73,9 @@ module.exports = (robot) ->
         user = robot.brain.usersForFuzzyName(username)[0] or user = msg.message.user
             
         projects = robot.brain.get("remind/#{user.name}/projects") or {}
+        if (project for project of projects).length <= 0
+            msg.send("Relax! There's nothing on #{user.name}'s list.")
+        
         for projectName of projects
             projectTaskHandler(msg, user.name, projectName)
         
@@ -215,7 +218,10 @@ module.exports = (robot) ->
         
     # Task Remove
     # ... hubot i finished emailing Foo
-    robot.hear /(.*) finished ((?!project$).*)/i, (msg) ->
+    robot.hear /(.*) finished (.*)/i, (msg) ->
+        if msg.match[2].indexOf("project") > -1
+            return
+    
         # Get user and projects
         username = msg.match[1].trim()        
         user = robot.brain.usersForFuzzyName(username)[0] or user = msg.message.user
