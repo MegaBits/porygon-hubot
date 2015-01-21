@@ -21,7 +21,8 @@
     "hubot-youtube": "^0.1.2",
     "hubot-leaderboard": "^0.4.0",
     "sugar": "^1.4.1",
-    "fuzzy": "^0.1.0"
+    "fuzzy": "^0.1.0",
+    "node-schedule": "^0.1.15" 
   },
   "engines": {
     "node": "0.10.x"

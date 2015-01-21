@@ -17,14 +17,11 @@
 #   weight(task) = (10 - (due_date - time())) + (10 * (priorty / 5))
 #
 # Feature Requests:
-#   ***** Full dumps of tasks
-#   ***-- Unit tests
-#   **--- Periodic updates in chat / Actual reminders
-#   ***-- Project layout formatting
 #   *---- Calendar export / Google calendar integration
 
 sugar = require('sugar')
 fuzzy = require('fuzzy')
+schedule = require('node-schedule')
 
 module.exports = (robot) ->
     
@@ -200,17 +197,21 @@ module.exports = (robot) ->
         priority = priority.rpad('-', 5)
         
         # Add to project
-        project.push(
-            task: task,
-            due_date: parsedDate,
-            priority: priority,
+        task =
+            task: task
+            due_date: parsedDate
+            priority: priority
             project: projectName
-        )
+            
+        project.push(task)
         
         projects[projectName] = project
         
         robot.brain.set("remind/#{user.name}/projects", projects)
         msg.send(":thumbsup: #{user.name} should #{task} #{heuristic} #{projectName} (#{priority}#{dueDate})")
+        
+        schedule.scheduleJob(parsedDate, () ->
+            msg.send(":alarm_clock: Reminder: #{description(task)}"))
         
     # Task Remove
     # ... hubot i finished emailing Foo
