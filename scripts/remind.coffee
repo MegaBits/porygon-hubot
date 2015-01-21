@@ -46,10 +46,11 @@ module.exports = (robot) ->
     tasksForProjects = (projects) ->
         allTasks = []
         for projectName, project of projects
-            projectTasks = project.sort (a, b) ->
-                if weight(a) > weight(b) then -1 else if weight(a) < weight(b) then 1 else 0  
-            for projectTask in projectTasks
+            for projectTask in project
                 allTasks.push(projectTask)
+                
+        allTasks = allTasks.sort (a, b) ->
+            if weight(a) > weight(b) then -1 else if weight(a) < weight(b) then 1 else 0  
         return allTasks
     
     # Task Observation
@@ -57,9 +58,7 @@ module.exports = (robot) ->
     robot.hear /what's next for ([^\?]*)(\??)/i, (msg) ->
         # Get user and projects
         username = msg.match[1].trim()
-        user = robot.brain.usersForFuzzyName(username)[0]        
-        if username == "me" or not user?
-            user = msg.message.user
+        user = robot.brain.usersForFuzzyName(username)[0] or user = msg.message.user
             
         projects = robot.brain.get("remind/#{user.name}/projects") or {}
         allTasks = tasksForProjects(projects)
@@ -69,6 +68,17 @@ module.exports = (robot) ->
         else
             response = "Relax! There's nothing on #{user.name}'s list."
         msg.send(response)
+        
+    # ... hubot what tasks do i have?
+    robot.hear /what tasks (do|does) (.*) have(\??)/i, (msg) ->
+        # Get user and projects
+        username = msg.match[2]
+        user = robot.brain.usersForFuzzyName(username)[0] or user = msg.message.user
+            
+        projects = robot.brain.get("remind/#{user.name}/projects") or {}
+        for projectName of projects
+            projectTaskHandler(msg, user.name, projectName)
+        
     
     # ... hubot what's due for the party from me?
     robot.hear /what's due for (.*) from ([^\?]*)(\??)/i, (msg) ->
@@ -78,9 +88,7 @@ module.exports = (robot) ->
         
     projectTaskHandler = (msg, username, projectName) ->
         # Get user and projects
-        user = robot.brain.usersForFuzzyName(username)[0]        
-        if username == "me" or not user?
-            user = msg.message.user
+        user = robot.brain.usersForFuzzyName(username)[0] or user = msg.message.user
             
         projects = robot.brain.get("remind/#{user.name}/projects") or {}        
         if not projectName of projects
@@ -118,9 +126,7 @@ module.exports = (robot) ->
     
     dueDateTaskHandler = (msg, username, heuristic, date) ->
         # Get user and projects
-        user = robot.brain.usersForFuzzyName(username)[0]        
-        if username == "me" or not user?
-            user = msg.message.user
+        user = robot.brain.usersForFuzzyName(username)[0] or user = msg.message.user
         
         projects = robot.brain.get("remind/#{user.name}/projects") or {}
         
@@ -169,9 +175,7 @@ module.exports = (robot) ->
         
     newTaskHandler = (msg, username, task, heuristic, projectName, time, priority) ->
         # Get user.
-        user = robot.brain.usersForFuzzyName(username)[0]        
-        if username == "me" or not user?
-            user = msg.message.user
+        user = robot.brain.usersForFuzzyName(username)[0] or user = msg.message.user
         
         if not user?
             msg.send "I'm not sure who I should remind."
@@ -210,12 +214,10 @@ module.exports = (robot) ->
         
     # Task Remove
     # ... hubot i finished emailing Foo
-    robot.hear /(.*) finished (.*)/i, (msg) ->
+    robot.hear /(.*) finished (.*)(^project)/i, (msg) ->
         # Get user and projects
         username = msg.match[1].trim()        
-        user = robot.brain.usersForFuzzyName(username)[0]        
-        if username == "i" or not user?
-            user = msg.message.user
+        user = robot.brain.usersForFuzzyName(username)[0] or user = msg.message.user
         
         projects = robot.brain.get("remind/#{user.name}/projects") or {}
         allTasks = tasksForProjects(projects)
@@ -241,13 +243,42 @@ module.exports = (robot) ->
         robot.brain.set("remind/#{user.name}/projects", projects)
         msg.send(":thumbsup: Nice! '#{results[0]}' is off the list.")
         
+    # ... hubot i finished the party project
+    robot.hear /(.*) finished (.*) project/i, (msg) ->
+        projectRemovalHandler(msg,
+            msg.match[1].trim(),
+            msg.match[2].trim().toLowerCase())
+    robot.hear /(.*) finished project (.*)/i, (msg) ->
+        projectRemovalHandler(msg,
+            msg.match[1].trim(),
+            msg.match[2].trim().toLowerCase())
+    
+    projectRemovalHandler = (msg, username, projectName) ->
+        # Get user and projects
+        user = robot.brain.usersForFuzzyName(username)[0] or user = msg.message.user
+        projects = robot.brain.get("remind/#{user.name}/projects") or {}
+        
+        # Sort and filter
+        results = fuzzy.filter(projectName, (projectName for projectName of projects)).map (i) ->
+            i.string
+        
+        if results.length <= 0
+            msg.send("I can't seem to find that project.")
+            return
+        
+        projectName = results[0]
+        
+        # Remove project
+        delete projects[projectName]
+
+        robot.brain.set("remind/#{user.name}/projects", projects)
+        msg.send(":tada: Fantastic! '#{results[0]}' is off the list. :tada:")
+        
     # ... hubot clear everything
     robot.hear /clear all tasks for (.*)/i, (msg) ->
         # Get user
         username = msg.match[1].trim()        
-        user = robot.brain.usersForFuzzyName(username)[0]        
-        if username == "me" or not user?
-            user = msg.message.user
+        user = robot.brain.usersForFuzzyName(username)[0] or msg.message.user
         
         if robot.brain.get("remind/clear") == user.name
             robot.brain.remove("remind/#{user.name}/projects")
