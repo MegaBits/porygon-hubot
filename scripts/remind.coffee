@@ -180,7 +180,7 @@ module.exports = (robot) ->
                     
         # Get due date.
         parsedDate = Date.create(time)
-        if parsedDate.isValid() and parsedDate.isFuture()
+        if parsedDate.isValid()
             dueDate = parsedDate.format(", {MM}/{dd}/{yyyy}")
         else
             parsedDate = Date.future
@@ -209,8 +209,10 @@ module.exports = (robot) ->
         robot.brain.set("remind/#{user.name}/projects", projects)
         msg.send(":thumbsup: #{user.name} should #{task} #{heuristic} #{projectName} (#{priority}#{dueDate})")
         
-        schedule.scheduleJob(parsedDate, () ->
+        job = schedule.scheduleJob(parsedDate, () ->
             msg.send(":alarm_clock: Reminder: #{description(projectTask)}"))
+            job.cancel()
+            job = null
         
     # Task Remove
     # ... hubot i finished emailing Foo
