@@ -210,9 +210,9 @@ module.exports = (robot) ->
         msg.send(":thumbsup: #{user.name} should #{task} #{heuristic} #{projectName} (#{priority}#{dueDate})")
         
         job = schedule.scheduleJob(parsedDate, () ->
-            msg.send(":alarm_clock: Reminder: #{description(projectTask)}"))
+            msg.send(":alarm_clock: Reminder: #{description(projectTask)}")
             job.cancel()
-            job = null
+            job = null)
         
     # Task Remove
     # ... hubot i finished emailing Foo
