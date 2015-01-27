@@ -6,7 +6,6 @@
 #   What better way than to converse with Hubot to plan your day?
 #
 # Technical: {
-#   "{user}/projects": {
 #      "{project}": [{
 #          "task": "{task}",
 #          "due_date": {due_date},
