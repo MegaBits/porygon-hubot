@@ -16,7 +16,6 @@ module.exports = (robot) ->
                 robot.messageRoom("#dev", "Alakazam is at full health.")
     checkupJob = cron.scheduleJob('* */12 * * *', checkup, robot)
     console.log("ping 0")
-    checkup(robot)
             
 uuid = ->
   'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) ->
