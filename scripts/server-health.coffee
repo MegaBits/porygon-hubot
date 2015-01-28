@@ -5,6 +5,7 @@ cron = require('node-crontab')
 
 module.exports = (robot) ->
     checkup = (robot) ->
+        console.log("dat post")
         # Checkup on Alakazam
         data = JSON.stringify({"uuid": uuid(), "event": "pingTest"})
         robot.http("http://alakazam-dev.elasticbeanstalk.com").post(data) (err, res, body) ->
