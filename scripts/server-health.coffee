@@ -18,6 +18,7 @@ module.exports = (robot) ->
 
     checkup = (aRobot) ->
         # Checkup on Alakazam
+        msg.send("> #{typeof(aRobot)}")
         aRobot.messageRoom("#dev", "Checking on Alakazam...")
         data = JSON.stringify({"uuid": uuid(), "event": "pingTest"})
         aRobot.http("http://alakazam-dev.elasticbeanstalk.com").post(data) (err, res, body) ->
