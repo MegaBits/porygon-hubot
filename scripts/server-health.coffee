@@ -5,7 +5,6 @@ cron = require('node-crontab')
 
 module.exports = (robot) ->
     checkup = (robot) ->
-        console.log("ping 1")
         # Checkup on Alakazam
         robot.messageRoom("#dev", "Checking on Alakazam...")
         data = JSON.stringify({"uuid": uuid(), "event": "pingTest"})
@@ -14,8 +13,10 @@ module.exports = (robot) ->
                 robot.messageRoom("#dev", "❗️Alakazam hurt itself in confusion❗️")
             else
                 robot.messageRoom("#dev", "Alakazam is at full health.")
-    checkupJob = cron.scheduleJob('* */12 * * *', checkup, robot)
-    console.log("ping 0")
+                
+    setInterval -> # Use timeout to allow for connection to Slack
+        checkupJob = cron.scheduleJob('* */12 * * *', checkup, robot)
+    , 5000
             
 uuid = ->
   'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) ->
