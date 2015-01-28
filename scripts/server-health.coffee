@@ -14,7 +14,7 @@ module.exports = (robot) ->
                 robot.messageRoom("#dev", "❗️Alakazam hurt itself in confusion❗️")
             else
                 robot.messageRoom("#dev", "Alakazam is at full health.")
-    checkupJob = cron.scheduleJob('* * * * *', checkup, robot)
+    checkupJob = cron.scheduleJob('* */12 * * *', checkup, robot)
     console.log("ping 0")
             
 uuid = ->
