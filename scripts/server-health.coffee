@@ -4,31 +4,26 @@
 cron = require('node-crontab')
 
 checkupJob = null
-checkupRobot = null
 
 module.exports = (robot) ->
-    robot.hear /start monitoring alakazam/i, (msg) ->
-        checkupRobot = robot
-        
-        msg.send("Ok, I'll start monitoring Alakazam.")
-        checkupJob = cron.scheduleJob('* */12 * * *', checkup)
-        checkup()
+    robot.hear /start monitoring alakazam/i, (msg) ->        
+        msg.send("Ok, I'll start monitoring Alakazam. (robot: #{typeof(robot)})")
+        checkupJob = cron.scheduleJob('* */12 * * *', checkup, robot)
+        checkup(robot)
     
     robot.hear /stop monitoring alakazam/i, (msg) ->
-        checkupRobot = null
-        
         msg.send("Ok, I'll stop monitoring Alakazam.")
         cron.cancelJob(checkupJob)
 
-    checkup = () ->
+    checkup = (robot) ->
         # Checkup on Alakazam
-        checkupRobot.messageRoom("#dev", "Checking on Alakazam...")
+        robot.messageRoom("#dev", "Checking on Alakazam...")
         data = JSON.stringify({"uuid": uuid(), "event": "pingTest"})
-        checkupRobot.http("http://alakazam-dev.elasticbeanstalk.com").post(data) (err, res, body) ->
+        robot.http("http://alakazam-dev.elasticbeanstalk.com").post(data) (err, res, body) ->
             if res.statusCode isnt 200
-                checkupRobot.messageRoom("#dev", "❗️Alakazam hurt itself in confusion❗️")
+                robot.messageRoom("#dev", "❗️Alakazam hurt itself in confusion❗️")
             else
-                checkupRobot.messageRoom("#dev", "Alakazam is at full health.")
+                robot.messageRoom("#dev", "Alakazam is at full health.")
             
 uuid = ->
   'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) ->
