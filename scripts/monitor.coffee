@@ -26,7 +26,7 @@ module.exports = (robot) ->
             msg.send("I'm already monitoring #{serverName}.")
             return
         
-        job = cron.scheduleJob "* 12 * * *",  ->
+        job = cron.scheduleJob "0 * * * *",  ->
             monitor(serverName, msg)
         monitorJobs[serverName] = job
         msg.send("Ok, I'll start monitoring #{serverName}.")
