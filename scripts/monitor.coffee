@@ -70,7 +70,7 @@ uuid = ->
   
 monitorEndpoints = {
     "alakazam": {
-        "url": "http://alakazam-dev.elasticbeanstalk.com",
+        "url": "http://alakazam.gameserver.megabitsapp.com",
         "method": "POST",
         "data": JSON.stringify({"uuid": uuid(), "event": "pingTest"})
     },
