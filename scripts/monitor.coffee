@@ -54,6 +54,8 @@ module.exports = (robot) ->
                 msg.send("#{serverName} is at full health.")
         
         switch endpoint.method
+            when "GET"
+                msg.http(endpoint.url).get() responseHandler
             when "POST"
                 msg.http(endpoint.url).post(endpoint.data) responseHandler
 
@@ -71,5 +73,10 @@ monitorEndpoints = {
         "url": "http://alakazam-dev.elasticbeanstalk.com",
         "method": "POST",
         "data": JSON.stringify({"uuid": uuid(), "event": "pingTest"})
+    },
+    
+    "exeggcute": {
+        "url": "http://exeggcute.gameserver.megabitsapp.com/user?q=megabits&client=2B604E7C6A0946BAB69E741BC177F961",
+        "method": "GET"
     }
 }
