@@ -49,7 +49,7 @@ module.exports = (robot) ->
         
         responseHandler = (err, res, body) ->
             if res.statusCode isnt 200
-                msg.send("❗️ #{serverName} hurt itself in confusion ❗️")
+                msg.send("@channel: ❗️ #{serverName} hurt itself in confusion ❗️")
             else
                 msg.send("#{serverName} is at full health.")
         
